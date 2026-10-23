@@ -1,5 +1,12 @@
 #pragma once
 
+namespace Red
+{
+// 2.5 renumbered the archive scopes: the depot looks the mod group up with 6 (archive\pc\mod and
+// mods\*\archives, rva 0x1259754 and 0x12594ac), the patch group with 4. The SDK enum still says Mod = 4.
+constexpr auto ModArchiveScope = static_cast<ArchiveScope>(6);
+}
+
 namespace Raw::ResourceDepot
 {
 constexpr auto InitializeArchives = Core::RawFunc<

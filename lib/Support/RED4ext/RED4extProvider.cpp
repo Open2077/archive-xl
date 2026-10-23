@@ -53,11 +53,17 @@ void Support::RED4extProvider::LogFlush()
 
 bool Support::RED4extProvider::HookAttach(uintptr_t aAddress, void* aCallback)
 {
+    if (!aAddress)
+        return false;
+
     return m_sdk->hooking->Attach(m_plugin, reinterpret_cast<void*>(aAddress), aCallback, nullptr);
 }
 
 bool Support::RED4extProvider::HookAttach(uintptr_t aAddress, void* aCallback, void** aOriginal)
 {
+    if (!aAddress)
+        return false;
+
     return m_sdk->hooking->Attach(m_plugin, reinterpret_cast<void*>(aAddress), aCallback, aOriginal);
 }
 
@@ -68,5 +74,10 @@ bool Support::RED4extProvider::HookDetach(uintptr_t aAddress)
 
 uintptr_t Support::RED4extProvider::ResolveAddress(uint32_t aAddressID)
 {
+    // A zero ID marks a function not located on this game version. Resolving
+    // it would terminate the game; the hook fails instead and its module unloads.
+    if (!aAddressID)
+        return 0;
+
     return RED4ext::UniversalRelocBase::Resolve(aAddressID);
 }

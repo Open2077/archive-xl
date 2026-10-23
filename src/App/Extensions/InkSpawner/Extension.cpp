@@ -18,6 +18,14 @@ std::string_view App::InkSpawnerExtension::GetName()
 
 bool App::InkSpawnerExtension::Load()
 {
+    // 2.5: FinishAsyncSpawn is not located yet; the hooks below run at engine init, where a failed
+    // OrThrow is an unhandled exception that ends the game.
+    if constexpr (Red::AddressLib::InkSpawner_FinishAsyncSpawn == 0)
+    {
+        LogWarning("Widget spawner extension is not applied, a function is not located on this game version.");
+        return true;
+    }
+
     HookOnceAfter<Raw::CBaseEngine::InitEngine>(+[]() {
         if (Red::GetType<"Codeware">())
         {
@@ -88,7 +96,7 @@ uintptr_t App::InkSpawnerExtension::OnSpawnExternal(Red::ink::WidgetLibraryResou
 
 bool App::InkSpawnerExtension::OnAsyncSpawnLocal(Red::ink::WidgetLibraryResource& aLibrary,
                                                  Red::InkSpawningInfo& aSpawningInfo,
-                                                 Red::CName aItemName)
+                                                 Red::CName aItemName, bool a4)
 {
     auto* itemNameStr = aItemName.ToString();
     auto* controllerSep = strchr(itemNameStr, ControllerSeparator);
@@ -98,17 +106,17 @@ bool App::InkSpawnerExtension::OnAsyncSpawnLocal(Red::ink::WidgetLibraryResource
         aItemName = Red::FNV1a64(reinterpret_cast<const uint8_t*>(itemNameStr), controllerSep - itemNameStr);
     }
 
-    return Raw::InkWidgetLibrary::AsyncSpawnFromLocal(aLibrary, aSpawningInfo, aItemName);
+    return Raw::InkWidgetLibrary::AsyncSpawnFromLocal(aLibrary, aSpawningInfo, aItemName, a4);
 }
 
 bool App::InkSpawnerExtension::OnAsyncSpawnExternal(Red::ink::WidgetLibraryResource& aLibrary,
                                                     Red::InkSpawningInfo& aSpawningInfo,
                                                     Red::ResourcePath aExternalPath,
-                                                    Red::CName aItemName)
+                                                    Red::CName aItemName, bool a5)
 {
     InjectDependency(aLibrary, aExternalPath);
 
-    return Raw::InkWidgetLibrary::AsyncSpawnFromExternal(aLibrary, aSpawningInfo, aExternalPath, aItemName);
+    return Raw::InkWidgetLibrary::AsyncSpawnFromExternal(aLibrary, aSpawningInfo, aExternalPath, aItemName, a5);
 }
 
 void App::InkSpawnerExtension::OnFinishAsyncSpawn(Red::InkSpawningContext& aContext,

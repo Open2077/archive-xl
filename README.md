@@ -1,5 +1,8 @@
 # ArchiveXL
 
+> **Open77 fork:** this branch (`open77/cyberpunk-2.5`) is an unofficial port of ArchiveXL 1.27.5 to Cyberpunk 2077 2.5.
+> What changed, what works and what is still off: [OPEN77-2.5.md](OPEN77-2.5.md). Not supported by psiberx.
+
 ArchiveXL is a modding tool that allows you to load custom resources without touching original game files,
 thus allowing multiple mods to expand same resources without conflicts.
 

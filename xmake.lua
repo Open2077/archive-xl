@@ -35,6 +35,8 @@ else
 end
 
 add_requires("hopscotch-map", "minhook", "spdlog", "tiltedcore", "yaml-cpp")
+-- mimalloc 3.x dropped mi_malloc_size, which TiltedCore's MimallocAllocator still links against.
+add_requireconfs("tiltedcore.mimalloc", {override = true, version = "2.1.7"})
 
 target("ArchiveXL")
     set_default(true)
@@ -59,7 +61,8 @@ target("RED4ext.SDK")
     set_kind("headeronly")
     set_group("vendor")
     add_headerfiles("vendor/RED4ext.SDK/include/**.hpp")
-    add_includedirs("vendor/RED4ext.SDK/include/", { public = true })
+    -- vendor-patches: the SDK enums renumbered by game patch 2.5, searched before the SDK copies.
+    add_includedirs("vendor-patches/RED4ext.SDK/include/", "vendor/RED4ext.SDK/include/", { public = true })
 
 target("nameof")
     set_default(false)
