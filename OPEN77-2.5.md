@@ -57,6 +57,12 @@ patch group now and 5 a new group loaded at init. With 4, ArchiveXL found no mod
 mod archives and patched nothing. `Red::ModArchiveScope` (= 6) replaces `ArchiveScope::Mod` in the extension loader
 and `ArchiveService`. The `ArchiveGroup` layout (0x38) is unchanged.
 
+open77.6: the character customization menu could stop on the SDK assertion `aIndex < m_size` (DynArray.hpp:122).
+`CustomizationExtension::FixCustomizationComponents` read `partsOverrides[0]` of every definition of an
+appearance resource in the `player_customization.app` scope, without checking the array; a definition with no parts
+overrides now leaves its components as they are. The customization classes' RTTI layouts are unchanged on 2.5, and
+so are the offsets read in the system (+0x48 / +0x58 resources) and `CMesh` (+0x218 material lock).
+
 The streaming system's world handle stays at system + 0x270 (`H335484407` writes it there on both builds): the
 `.devices` / `.psrep` patches are unchanged.
 

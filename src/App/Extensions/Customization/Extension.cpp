@@ -889,6 +889,9 @@ void App::CustomizationExtension::FixCustomizationComponents(const Red::Handle<R
     if (!ResourceMetaExtension::InScope(ResourceMetaExtension::CustomizationApp, aResource->path))
         return;
 
+    if (aDefinition->partsOverrides.IsEmpty())
+        return;
+
     for (auto& override : aDefinition->partsOverrides[0].componentsOverrides)
     {
         for (const auto& component : aComponents)
