@@ -182,6 +182,8 @@ constexpr uint32_t StreamingWorld_Serialize = 410718963;
 
 constexpr uint32_t RuntimeSystemWorldStreaming_LoadWorldJob = 2872059340;
 
+constexpr uint32_t TransactionSystem_GetSlotHolder = 4293273607; // 2.5 rva 0x1bdef8, called first by FindSlotData
+
 constexpr uint32_t TPPRepresentationComponent_OnAttach = 4129169021;
 constexpr uint32_t TPPRepresentationComponent_OnItemEquipped = 4010810747;
 constexpr uint32_t TPPRepresentationComponent_OnItemUnequipped = 1933319146;

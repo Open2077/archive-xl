@@ -63,6 +63,21 @@ appearance resource in the `player_customization.app` scope, without checking th
 overrides now leaves its components as they are. The customization classes' RTTI layouts are unchanged on 2.5, and
 so are the offsets read in the system (+0x48 / +0x58 resources) and `CMesh` (+0x218 material lock).
 
+open77.7: restoring a saved appearance froze the game thread for 120 s, then the engine watchdog
+(`engineWatchdog.cpp:224`) closed the game. On 2.5 the game resolves appearance suffixes while it holds the owner's
+attachment slot lock exclusively: rva 0x89bf5c takes the spinlock at slot holder + 0x100 for writing (guard 0x1ffad60)
+and calls, through 0x89bb50, `AppearanceChanger_GetSuffixes` (0x756808), then `GetSuffixValue`. The inner sleeves hook
+(`AttachmentExtension::OnGetSuffixValue` → `IsVisualTagActive`) called `ITransactionSystem::FindSlotData` (vtable 0x448,
+rva 0x75a4e0), which takes the same lock for reading (guard 0x1ffada0, spin 0x22ca420 with `umwait`/`pause`). The
+lock is not reentrant: the thread spun on its own write lock. Captured with `cdb -pv` on the hung game, three samples
+at rip 0x22ca51e / 0x22ca570.
+
+`Red::FindSlotDataReentrant` (`src/Red/TransactionSystem.hpp`) replaces the three `FindSlotData` calls (attachment
+extension twice, puppet state handler). It gets the holder like the game does (`TransactionSystem_GetSlotHolder` =
+4293273607, rva 0x1bdef8). If the lock is still write-held after 4096 `pause` instructions, the caller is inside that
+update, and the slots (`DynArray<AttachmentSlotData>` at holder + 0xb0, 0x90-byte entries) are read without the lock.
+Otherwise it calls the vtable `FindSlotData`.
+
 The streaming system's world handle stays at system + 0x270 (`H335484407` writes it there on both builds): the
 `.devices` / `.psrep` patches are unchanged.
 

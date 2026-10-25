@@ -4,6 +4,7 @@
 #include "App/Extensions/PuppetState/Extension.hpp"
 #include "Core/Facades/Log.hpp"
 #include "Red/ItemObject.hpp"
+#include "Red/TransactionSystem.hpp"
 #include "Red/TweakDB.hpp"
 
 namespace
@@ -341,11 +342,11 @@ bool App::PuppetStateHandler::IsFlatSole(const Red::Handle<Red::ItemObject>& aIt
 App::PuppetStateHandler::SlotState App::PuppetStateHandler::GetItemInSlot(const Red::Handle<Red::Entity>& aPuppet,
                                                                           Red::TweakDBID aSlotID)
 {
-    auto slotData = m_transactionSystem->FindSlotData(aPuppet,
-                                                      [aSlotID](const Red::AttachmentSlotData& aSlotData)
-                                                      {
-                                                          return aSlotData.slotID == aSlotID;
-                                                      });
+    auto slotData = Red::FindSlotDataReentrant(m_transactionSystem, aPuppet,
+                                               [aSlotID](const Red::AttachmentSlotData& aSlotData)
+                                               {
+                                                   return aSlotData.slotID == aSlotID;
+                                               });
 
     if (!slotData)
         return {};

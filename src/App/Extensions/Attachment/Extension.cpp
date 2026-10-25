@@ -165,11 +165,11 @@ void App::AttachmentExtension::OnAttachTPP(Red::game::TPPRepresentationComponent
                     auto debugSlotName = Red::ToStringDebug(subSlotID);
 #endif
 
-                    auto slotData = transactionSystem->FindSlotData(aComponent->owner,
-                                                                   [subSlotID](const Red::AttachmentSlotData& aSlotData)
-                                                                   {
-                                                                       return aSlotData.slotID == subSlotID;
-                                                                   });
+                    auto slotData = Red::FindSlotDataReentrant(transactionSystem, aComponent->owner,
+                                                               [subSlotID](const Red::AttachmentSlotData& aSlotData)
+                                                               {
+                                                                   return aSlotData.slotID == subSlotID;
+                                                               });
                     if (slotData && slotData->itemObject)
                     {
                         const auto& itemID = Raw::ItemObject::ItemID::Ref(slotData->itemObject).tdbid;
@@ -296,11 +296,11 @@ bool App::AttachmentExtension::IsVisualTagActive(Red::ITransactionSystem* aTrans
                                                  Red::TweakDBID aSlotID, Red::CName aVisualTag,
                                                  Red::TweakDBID aEquippedItemID)
 {
-    auto slotData = aTransactionSystem->FindSlotData(aOwner,
-                                                     [aSlotID](const Red::AttachmentSlotData& aSlotData)
-                                                     {
-                                                         return aSlotData.slotID == aSlotID;
-                                                     });
+    auto slotData = Red::FindSlotDataReentrant(aTransactionSystem, aOwner,
+                                               [aSlotID](const Red::AttachmentSlotData& aSlotData)
+                                               {
+                                                   return aSlotData.slotID == aSlotID;
+                                               });
     if (slotData)
     {
 #ifndef NDEBUG

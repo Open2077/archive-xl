@@ -5,6 +5,7 @@
 #include "Red/AttachmentSlots.hpp"
 #include "Red/CharacterCustomization.hpp"
 #include "Red/TPPRepresentationComponent.hpp"
+#include "Red/TransactionSystem.hpp"
 
 namespace App
 {
