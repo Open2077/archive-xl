@@ -20,7 +20,7 @@ Releases are tagged `v1.28.0-open77.N`; the package is game-root relative, like 
 - The uncooked `worldCollisionNode` of 2.5 has a new layout (0x120 -> 0xC0): its actors are not addressed with
   the 2.31 offsets any more.
 
-Verified in game on 2026-10-26 (LightRP): five NCWE worlds that crashed the official 1.28.0 (NCPD Watson,
+Verified in game on 2026-10-26 (LightRP): four NCWE worlds that crashed the official 1.28.0 (NCPD Watson,
 `entrepot1`, `appart3`, the Kabuki studio) load and stay up, sectors patched with no error; deleting every cooked
 collision placement under a player's feet makes the player fall through the street (client log `floor=absent`).
 
