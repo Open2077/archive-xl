@@ -651,6 +651,7 @@ bool App::WorldStreamingExtension::PatchSector(Red::world::StreamingSector* aSec
             nodeSetup->scale.Y = 0;
             nodeSetup->scale.Z = 0;
             nodeSetup->node = s_dummyNode.instance;
+            nodeSetup->instanceIndex = 0xFFFFFFFF;
             continue;
         }
 
@@ -662,9 +663,12 @@ bool App::WorldStreamingExtension::PatchSector(Red::world::StreamingSector* aSec
         nodeSetup->globalNodeID = 0;
         // nodeSetup->proxyNodeID = 0;
 
-        // The placement of a cooked node keeps its node: the node holds the other placements' entries.
-        if (!IsCooked(nodeDefinition))
-            nodeSetup->node = s_dummyNode.instance;
+        // The dummy is an uncooked node: the setup must not keep the element index of the node it
+        // replaces. 2.5 indexes the placements of more classes than worldCooked* (instanced
+        // destructibles, physical destruction...); a kept index makes the game read the dummy as a
+        // cooked body and fault (psiberx/cp2077-archive-xl#36).
+        nodeSetup->node = s_dummyNode.instance;
+        nodeSetup->instanceIndex = 0xFFFFFFFF;
     }
 
     return true;

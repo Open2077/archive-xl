@@ -12,16 +12,17 @@ Releases are tagged `v1.28.0-open77.N`; the package is game-root relative, like 
   dummy `worldStaticMeshNode` and keeps the setup's instance index; the game then reads the dummy as a cooked body
   and faults reading 0xFFFFFFFFFFFFFFFF at `Cyberpunk2077.exe+0x20BE897`
   ([psiberx/cp2077-archive-xl#36](https://github.com/psiberx/cp2077-archive-xl/issues/36)). Here a cooked
-  placement keeps its node (the node holds the other placements' entries): a cooked static mesh is scaled to 0,
-  the other cooked kinds are moved to z -2000 and scaled to 0.
+  setup gets the dummy only with its instance index reset to -1 (2.5 indexes the placements of more classes than
+  `worldCooked*`: instanced destructibles, physical destruction...), and a cooked static mesh is only scaled to 0.
 - **Cooked collision actors** (`worldCookedCollisionNode`): `actorDeletions` and `actorMutations` edit the actors of
   one placement in the node's compiled data (2.31 layout kept per run), guarded by `expectedActors`. 1.28.0 does not
   know the class: a removed game mesh kept its collision.
 - The uncooked `worldCollisionNode` of 2.5 has a new layout (0x120 -> 0xC0): its actors are not addressed with
   the 2.31 offsets any more.
 
-Verified in game on 2026-10-26 (LightRP, Watson): the same `entrepot1` world that crashed the official 1.28.0 twice
-patches its 5 sectors (219 node deletions, cooked meshes, decals, occluders and a terrain collision) without a crash.
+Verified in game on 2026-10-26 (LightRP): five NCWE worlds that crashed the official 1.28.0 (NCPD Watson,
+`entrepot1`, `appart3`, the Kabuki studio) load and stay up, sectors patched with no error; deleting every cooked
+collision placement under a player's feet makes the player fall through the street (client log `floor=absent`).
 
 ## Building
 
