@@ -24,6 +24,16 @@ Verified in game on 2026-10-26 (LightRP): four NCWE worlds that crashed the offi
 `entrepot1`, `appart3`, the Kabuki studio) load and stay up, sectors patched with no error; deleting every cooked
 collision placement under a player's feet makes the player fall through the street (client log `floor=absent`).
 
+## Fix in 1.28.0-open77.2: appearance patch merges outlive their entity (`src/App/Extensions/ResourcePatch/Extension.cpp`)
+
+The `.app` patch and part merges of an entity build run in jobs dispatched after the builder's own job returns.
+They held a reference to the builder's extractor results and nothing that kept them alive: an entity removed
+while its appearance still loaded (a car streamed out or replaced, a sanitized vanilla car) freed the builder,
+and the pending `MergeComponents` read freed memory. Open77 crash reports of 2026-11-13/14 (Light RP servers
+with the `open77_vehicle_plates` `.app` patches): 9 crashes at `ArchiveXL.dll+0xF7342` / `+0xF7333` (a virtual
+call on a freed component). The merges now hold the extractor that owns the results. Upstream master has the
+same captures (checked against v1.28.8).
+
 ## Building
 
 As upstream: `xmake f -m release -y` then `xmake build -y` (vendor/RED4ext.SDK as pinned by 1.28.0).
