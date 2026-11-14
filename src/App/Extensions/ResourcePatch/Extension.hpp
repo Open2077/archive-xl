@@ -80,11 +80,15 @@ private:
     static void OnSetPersistentStateData(uint64_t a1, Red::DataBuffer& aData, uint64_t a3, uint32_t a4);
     static void OnInkAnimResourceLoad(Red::inkanimAnimationLibraryResource* aResource);
 
+    // aResultOwner owns aResultObjects (the entity builder's extractor). The merges run in
+    // jobs dispatched after the caller returns: they hold it, so the results outlive a
+    // builder released meanwhile (an entity removed while its appearance still loads).
     static void IncludeAppearanceParts(const Red::Handle<Red::AppearanceResource>& aResource,
                                        const Red::Handle<Red::AppearanceDefinition>& aDefinition,
                                        Red::DynArray<Red::Handle<Red::ISerializable>>& aResultObjects,
                                        bool aDisablePostLoad, bool aDisableImports, bool aDisablePreInitialization,
-                                       bool aForceIncludeParts, const Red::JobGroup& aJobGroup);
+                                       bool aForceIncludeParts, const Red::JobGroup& aJobGroup,
+                                       const Red::SharedPtr<Red::ObjectPackageExtractor>& aResultOwner);
 
     static void PatchPackageResults(const Red::Handle<Red::EntityTemplate>& aTemplate,
                                     Red::DynArray<Red::Handle<Red::ISerializable>>& aResultObjects,
@@ -97,7 +101,8 @@ private:
                                     bool aDisablePostLoad,
                                     bool aDisableImports,
                                     bool aDisablePreInitialization,
-                                    const Red::JobGroup& aJobGroup);
+                                    const Red::JobGroup& aJobGroup,
+                                    const Red::SharedPtr<Red::ObjectPackageExtractor>& aResultOwner);
 
     static void MergeEntity(Red::DynArray<Red::Handle<Red::ISerializable>>& aResultObjects,
                             Red::DynArray<Red::Handle<Red::ISerializable>>& aPatchObjects,
