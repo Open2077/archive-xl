@@ -757,7 +757,7 @@ void App::ResourcePatchExtension::OnEntityPackageLoad(Red::JobQueue& aJobQueue, 
                                    entityBuilder->appearance.extractor->disablePostLoad,
                                    entityBuilder->appearance.extractor->disableImports,
                                    entityBuilder->appearance.extractor->disablePreInitialization,
-                                   forceParts, aJobGroup);
+                                   forceParts, aJobGroup, entityBuilder->appearance.extractor);
         }
 
         if (entityBuilder->flags.ExtractAppearances)
@@ -772,7 +772,7 @@ void App::ResourcePatchExtension::OnEntityPackageLoad(Red::JobQueue& aJobQueue, 
                                            appearance.extractor->disablePostLoad,
                                            appearance.extractor->disableImports,
                                            appearance.extractor->disablePreInitialization,
-                                           forceParts, aJobGroup);
+                                           forceParts, aJobGroup, appearance.extractor);
                 }
             }
         }
@@ -801,7 +801,7 @@ void App::ResourcePatchExtension::OnEntityPackageLoad(Red::JobQueue& aJobQueue, 
                                 entityBuilder->appearance.extractor->disablePostLoad,
                                 entityBuilder->appearance.extractor->disableImports,
                                 entityBuilder->appearance.extractor->disablePreInitialization,
-                                aJobGroup);
+                                aJobGroup, entityBuilder->appearance.extractor);
         }
 
         if (entityBuilder->flags.ExtractAppearances)
@@ -816,7 +816,7 @@ void App::ResourcePatchExtension::OnEntityPackageLoad(Red::JobQueue& aJobQueue, 
                                         appearance.extractor->disablePostLoad,
                                         appearance.extractor->disableImports,
                                         appearance.extractor->disablePreInitialization,
-                                        aJobGroup);
+                                        aJobGroup, appearance.extractor);
                 }
             }
         }
@@ -1033,7 +1033,8 @@ void App::ResourcePatchExtension::IncludeAppearanceParts(const Red::Handle<Red::
                                                          Red::DynArray<Red::Handle<Red::ISerializable>>& aResultObjects,
                                                          bool aDisablePostLoad, bool aDisableImports,
                                                          bool aDisablePreInitialization, bool aForceIncludeParts,
-                                                         const Red::JobGroup& aJobGroup)
+                                                         const Red::JobGroup& aJobGroup,
+                                                         const Red::SharedPtr<Red::ObjectPackageExtractor>& aResultOwner)
 {
     if (!aResource || !aDefinition)
         return;
@@ -1051,8 +1052,8 @@ void App::ResourcePatchExtension::IncludeAppearanceParts(const Red::Handle<Red::
         auto partToken = Red::ResourceLoader::Get()->LoadAsync<Red::EntityTemplate>(part.resource.path);
 
         jobQueue.Wait(partToken->job);
-        jobQueue.Dispatch([partToken = std::move(partToken), &aResultObjects, aDisablePostLoad, aDisableImports,
-                           aDisablePreInitialization, aResource, aDefinition]() {
+        jobQueue.Dispatch([partToken = std::move(partToken), resultOwner = aResultOwner, &aResultObjects,
+                           aDisablePostLoad, aDisableImports, aDisablePreInitialization, aResource, aDefinition]() {
             if (partToken->IsFailed())
                 return;
 
@@ -1149,7 +1150,8 @@ void App::ResourcePatchExtension::PatchPackageResults(const Red::Handle<Red::App
                                                       const Red::Handle<Red::AppearanceDefinition>& aDefinition,
                                                       Red::DynArray<Red::Handle<Red::ISerializable>>& aResultObjects,
                                                       bool aDisablePostLoad, bool aDisableImports,
-                                                      bool aDisablePreInitialization, const Red::JobGroup& aJobGroup)
+                                                      bool aDisablePreInitialization, const Red::JobGroup& aJobGroup,
+                                                      const Red::SharedPtr<Red::ObjectPackageExtractor>& aResultOwner)
 {
     if (!aResource || !aDefinition)
         return;
@@ -1173,9 +1175,9 @@ void App::ResourcePatchExtension::PatchPackageResults(const Red::Handle<Red::App
         auto patchBufferToken = patchDefinition->compiledData.LoadAsync();
 
         jobQueue.Wait(patchBufferToken->job);
-        jobQueue.Dispatch([patchDefinition = std::move(patchDefinition), &aResultObjects, aDisablePostLoad,
-                           aDisableImports, aDisablePreInitialization, patchPath = patchInstance->path, aResource,
-                           aDefinition](const Red::JobGroup& aJobGroup) {
+        jobQueue.Dispatch([patchDefinition = std::move(patchDefinition), resultOwner = aResultOwner, &aResultObjects,
+                           aDisablePostLoad, aDisableImports, aDisablePreInitialization,
+                           patchPath = patchInstance->path, aResource, aDefinition](const Red::JobGroup& aJobGroup) {
             auto patchReader = Red::ObjectPackageReader(patchDefinition->compiledData);
             patchReader.ReadHeader(patchDefinition->compiledDataHeader);
 
@@ -1188,8 +1190,8 @@ void App::ResourcePatchExtension::PatchPackageResults(const Red::Handle<Red::App
 
             Red::JobQueue jobQueue{aJobGroup};
             jobQueue.Wait(patchExtractionJob);
-            jobQueue.Dispatch([patchExtractor = std::move(patchExtractor), &aResultObjects, patchPath, patchDefinition,
-                               aResource, aDefinition]() {
+            jobQueue.Dispatch([patchExtractor = std::move(patchExtractor), resultOwner, &aResultObjects, patchPath,
+                               patchDefinition, aResource, aDefinition]() {
                 if (!patchExtractor->results.IsEmpty())
                 {
                     MergeComponents(aResultObjects, patchExtractor->results, false, patchPath, aResource->path,
